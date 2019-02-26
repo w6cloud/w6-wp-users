@@ -45,12 +45,28 @@ class Wp_Users {
 		if(!class_exists('\TitanFramework')){
 			require_once FS::path( 'vendor/gambitph/titan-framework/titan-framework-embedder.php' );
 		}
-		$t->titan = \TitanFramework::getInstance( 'w6-wp-seo' );
+		$t->titan = \TitanFramework::getInstance( 'w6-wp-users' );
 
-		if ( is_admin() ) {
-			Admin\Panels::init();
-			Admin\Metaboxes::init();
-		} else {
+		Admin\Panels::init();
+		Admin\Metaboxes::init();
+
+		if ( !is_admin() ) {
+			add_action( 'template_redirect', '\W6\Wp_Users\Wp_Users::check_access' );
+		}
+	}
+
+	/**
+	 * Check access
+	 *
+	 * @return void
+	 */
+	public static function check_access(){
+		$t = self::instance();
+		if ( 
+			$t->titan->getOption( 'users_restricted_content' )
+			&& !is_user_logged_in() 
+		) {
+			auth_redirect();
 		}
 	}
 }
